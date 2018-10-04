@@ -22,5 +22,5 @@
 # SOFTWARE.
 # -------------------------------------------------------------------------------
 
-from button import HoverPressIconButton
+from HoverPressIconButton import HoverPressIconButton
 
