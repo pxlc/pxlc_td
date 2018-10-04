@@ -22,14 +22,21 @@
 # SOFTWARE.
 # -------------------------------------------------------------------------------
 
+import os
 import sys
+
 from PySide import QtCore, QtGui
 
 sys.path.append('..')
 import pxlc
 
-ICONS_ROOT = '../res/icons'
-IMAGES_ROOT = '../res/images'
+ICONS_ROOT = '../../res/icons'
+IMAGES_ROOT = '../../res/images'
+
+PXLC_RES_ROOT = os.getenv('PXLC_RES_ROOT')
+if PXLC_RES_ROOT:
+    ICONS_ROOT = os.path.join([PXLC_RES_ROOT, 'res', 'icons']).replace('\\', '/')
+    IMAGES_ROOT = os.path.join([PXLC_RES_ROOT, 'res', 'images']).replace('\\', '/')
 
 
 class Example(QtGui.QWidget):
