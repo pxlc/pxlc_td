@@ -27,3 +27,5 @@ from EasyDataTableWdg import EasyDataTableWdg
 
 import css
 
+from cb import connect_callback
+

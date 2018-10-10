@@ -26,6 +26,7 @@ import qt
 
 from EnvManager import EnvManager
 from MainOptParse import MainOptParse
+from Callback import Callback
 
 import util
 
