@@ -61,6 +61,30 @@ def checkbox_widget(easy_table_wdg, row_idx, col_name, cfg_for_col, context):
 
 def main2():  
     app = QtGui.QApplication(sys.argv)
+    app.setStyleSheet('''
+QTableView
+{
+    color: #AAAAAA;
+    border: 1px solid #000000;
+    background: #888888;
+    gridline-color: #444444;
+}
+QTableView::item
+{
+    background: #666666;
+}
+QHeaderView::section
+{
+    spacing: 10px;
+    background-color: #FFFF88;
+    color: blue;
+    border: 1px solid red;
+    margin: 1px;
+    text-align: right;
+    font-family: arial;
+    font-size:12px;
+}
+    ''')
 
     columns = ['greeting', 'language', 'activate']
     data_list = [
