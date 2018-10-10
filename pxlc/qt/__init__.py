@@ -23,4 +23,5 @@
 # -------------------------------------------------------------------------------
 
 from HoverPressIconButton import HoverPressIconButton
+from EasyDataTableWdg import EasyDataTableWdg
 
