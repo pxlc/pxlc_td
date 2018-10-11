@@ -34,12 +34,12 @@ sys.path.append(_path_to_add)
 import pxlc
 
 
-def checkbox_callback(cb_data, args):
+def ensure_only_single_active_checked(cb_data, args):
 
     row_idx = cb_data.get('row_idx')
     col_name = cb_data.get('col_name')
     easy_table = cb_data.get('easy_table_wdg')
-    checkbox_wdg = cb_data.get('checkbox_wdg')
+    checkbox_wdg = cb_data.get('wdg')
 
     data_rows = easy_table.get_data_rows()
     col_idx = easy_table.get_col_idx_by_col_name(col_name)
@@ -56,30 +56,9 @@ def checkbox_callback(cb_data, args):
         for r_idx, row in enumerate(data_rows):
             if r_idx == row_idx:
                 continue
-            if row[col_name]:
-                row[col_name] = False
-                wdg = easy_table.get_widget_by_row_col(r_idx, col_idx)
-                if wdg and type(wdg) is QtGui.QCheckBox:
-                    wdg.setChecked(False)
-
-
-def checkbox_widget(easy_table_wdg, row_idx, col_name, cfg_for_col, context):
-
-    wdg = QtGui.QCheckBox()
-    if easy_table_wdg.get_data_rows()[row_idx].get(col_name):
-        wdg.setChecked(True)
-    else:
-        wdg.setChecked(False)
-
-    cb_data = {
-        'row_idx': row_idx,
-        'col_name': col_name,
-        'easy_table_wdg': easy_table_wdg,
-        'checkbox_wdg': wdg,
-    }
-
-    pxlc.qt.connect_callback(wdg.clicked, checkbox_callback, cb_data)
-    return wdg
+            wdg = easy_table.get_widget_by_row_col(r_idx, col_idx)
+            if wdg and type(wdg) is QtGui.QCheckBox:
+                wdg.setChecked(False)
 
 
 def main2():  
@@ -124,7 +103,8 @@ QHeaderView::section
             'is_editable': False
         },
         'activate': {
-            'widget_fn': checkbox_widget
+            'widget_type': 'check_box',
+            'edit_response_fn': ensure_only_single_active_checked
         },
     }
 

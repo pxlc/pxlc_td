@@ -27,7 +27,7 @@ import sys
 
 from PySide import QtGui, QtCore
 
-from .. import Callback
+from .cb import connect_callback
 
 
 class EasyDataTableWdg(QtGui.QTableWidget):
@@ -56,6 +56,65 @@ class EasyDataTableWdg(QtGui.QTableWidget):
     def get_widget_by_row_col(self, row_idx, col_idx):
         return self.wdg_by_row_col.get((row_idx, col_idx ))
 
+    def _edit_cb_check_box(self, cb_data, args):
+
+        row_idx = cb_data.get('row_idx')
+        col_name = cb_data.get('col_name')
+        wdg = cb_data.get('wdg')
+        self.get_data_rows()[row_idx][col_name] = wdg.isChecked()
+
+        edit_response_fn = cb_data.get('edit_response_fn')
+        if edit_response_fn:
+            edit_response_fn(cb_data, args)
+
+    def _edit_cb_line_edit(self, cb_data, args):
+
+        row_idx = cb_data.get('row_idx')
+        col_name = cb_data.get('col_name')
+        wdg = cb_data.get('wdg')
+
+        if self.get_data_rows()[row_idx][col_name] != str(wdg.text()):
+            self.get_data_rows()[row_idx][col_name] = str(wdg.text())
+            print('')
+            print(json.dumps(self.get_data_rows()[row_idx], indent=4, sort_keys=True))
+            print('')
+
+        edit_response_fn = cb_data.get('edit_response_fn')
+        if edit_response_fn:
+            edit_response_fn(cb_data, args)
+
+    def _create_wdg_by_type(self, wdg_type, row_idx, col_name, col_cfg_d):
+
+        if wdg_type == 'check_box':
+            wdg = QtGui.QCheckBox()
+            if self.get_data_rows()[row_idx].get(col_name):
+                wdg.setChecked(True)
+            else:
+                wdg.setChecked(False)
+            cb_data = {
+                'row_idx': row_idx, 'col_name': col_name, 'easy_table_wdg': self, 'wdg_type': wdg_type,
+                'edit_response_fn': col_cfg_d.get('edit_response_fn'), 'wdg': wdg,
+            }
+            connect_callback(wdg.stateChanged, self._edit_cb_check_box, cb_data)
+            return wdg
+
+        elif wdg_type == 'line_edit':
+            wdg = QtGui.QLineEdit()
+            value = self.get_data_rows()[row_idx].get(col_name)
+            print(':: "%s" column value is "%s" (type %s)' % (col_name, value, type(value)))
+            if not value:
+                value = ''
+            wdg.setText(value)
+            cb_data = {
+                'row_idx': row_idx, 'col_name': col_name, 'easy_table_wdg': self, 'wdg_type': wdg_type,
+                'edit_response_fn': col_cfg_d.get('edit_response_fn'), 'wdg': wdg,
+            }
+            # connect_callback(wdg.textChanged, self._edit_cb_line_edit, cb_data)
+            connect_callback(wdg.editingFinished, self._edit_cb_line_edit, cb_data)
+            return wdg
+
+        return None
+
     def build_table(self):
 
         self.wdg_by_row_col = {}
@@ -65,23 +124,33 @@ class EasyDataTableWdg(QtGui.QTableWidget):
 
         for r_idx, row_data in enumerate(self.data_rows):
             for c_idx, col_name in enumerate(self.column_order):
+                col_cfg_d = self.col_config.get(col_name, {})
                 wdg = None
-                get_widget_fn = self.col_config.get(col_name, {}).get('widget_fn')
-                is_editable = self.col_config.get(col_name, {}).get('is_editable', True)
-                if get_widget_fn:
-                    wdg = get_widget_fn(self, r_idx, col_name, self.col_config.get(col_name, {}), self.context)
+                col_wdg_type = col_cfg_d.get('widget_type')
+                if not col_wdg_type:
+                    col_wdg_type = 'line_edit'
+                # get_widget_fn = col_cfg_d.get('widget_fn')
+
+                wdg = self._create_wdg_by_type(col_wdg_type, r_idx, col_name, col_cfg_d)
+
+                is_editable = col_cfg_d.get('is_editable', True)
+
+                # if get_widget_fn:
+                #     wdg = get_widget_fn(self, r_idx, col_name, self.col_config.get(col_name, {}), self.context)
+
                 if wdg:
                     if not is_editable:
                         wdg.setEnabled(False)
                     self.setCellWidget(r_idx, c_idx, wdg)
-                    print('  (%s, %s) => %s' % (r_idx, c_idx, type(self.item(r_idx, c_idx))))
                     self.wdg_by_row_col[ (r_idx, c_idx) ] = wdg
                     continue
-                twdg_item = QtGui.QTableWidgetItem('{}'.format(row_data.get(col_name)))
-                if not is_editable:
-                    twdg_item.setFlags(twdg_item.flags() ^ QtCore.Qt.ItemIsEditable)
-                self.setItem(r_idx, c_idx, twdg_item)
-                print('  (%s, %s) => %s' % (r_idx, c_idx, type(self.item(r_idx, c_idx))))
+
+                # twdg_item = QtGui.QTableWidgetItem('{}'.format(row_data.get(col_name)))
+                # if not is_editable:
+                #     twdg_item.setFlags(twdg_item.flags() ^ QtCore.Qt.ItemIsEditable)
+                # self.setItem(r_idx, c_idx, twdg_item)
+                # print('  (%s, %s) => %s' % (r_idx, c_idx, type(self.item(r_idx, c_idx))))
+                pass
 
         header_labels = []
         for col_name in self.column_order:
