@@ -22,33 +22,57 @@
 # SOFTWARE.
 # -------------------------------------------------------------------------------
 
-def wdg_add_classes( q_wdg, css_classes_str ):
+from PySide import QtCore, QtGui
 
-    css_class_list = css_classes_str.split()
-    for css_class in css_class_list:
-        q_wdg.setProperty('css{}'.format(css_class), 'on')
+from .cb import connect_callback  # local import
+
+__INFO__ = '''
+
+   item list:
+
+    [
+        {
+            'label': 'Menu label',
+            'select_data': 'any type, returned if item is selected',
+            'style': 'style sheet string (optional)',
+        }
+    ]
+
+'''
 
 
-def wdg_remove_classes( q_wdg, css_classes_str ):
+class DropDownMenu(QtGui.QComboBox):
 
-    active_css_prop_names = [ str(prop_name) for prop_name in q_wdg.dynamicPropertyNames()
-                                if str(prop_name).startswith('css') ]
-    css_class_list = css_classes_str.split()
-    for css_class in css_class_list:
-        css_prop_name = 'css{}'.format(css_class)
-        if css_prop_name in active_css_prop_names:
-            q_wdg.setProperty(css_prop_name, None)  # setting property with value None removes it
+    def __init__(self, item_list=[], parent=None):
 
+        super(DropDownMenu, self).__init__(parent=parent)
 
-def wdg_set_classes( q_wdg, css_classes_str ):
+        self.item_list = item_list[:]
 
-    for prop_name in q_wdg.dynamicPropertyNames():
-        if str(prop_name).startswith('css'):
-            # NOTE: prop_name needs to be cast to str for .setProperty() and value None will remove property
-            q_wdg.setProperty(str(prop_name), None)
+    def clear_all_items(self):
 
-    css_class_list = css_classes_str.split()
-    for css_class in css_class_list:
-        q_wdg.setProperty('css{}'.format(css_class), 'on')
+        while self.count() > 0:
+            self.removeItem(0)
 
+    def load_items(self, item_list):
+
+        self.clear_all_items()
+        self.item_list = item_list[:]
+
+        for item in self.item_list:
+            label = item.get('label','')
+            self.addItem(label)
+
+        self.setSizeAdjustPolicy(QtGui.QComboBox.AdjustToContents)
+
+    def set_index_changed_callback(self, index_changed_cb_fn):
+
+        connect_callback(self.currentIndexChanged, index_changed_cb_fn, {'wdg': self})
+
+    def get_current_item(self):
+
+        curr_idx = self.currentIndex()
+        if curr_idx >= 0 and curr_idx < len(self.item_list):
+            return self.item_list[curr_idx]
+        return None
 
