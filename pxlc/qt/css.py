@@ -22,11 +22,20 @@
 # SOFTWARE.
 # -------------------------------------------------------------------------------
 
+def __update_wdg( q_wdg ):
+
+    q_wdg.style().unpolish(q_wdg)
+    q_wdg.style().polish(q_wdg)
+    q_wdg.update()
+
+
 def wdg_add_classes( q_wdg, css_classes_str ):
 
     css_class_list = css_classes_str.split()
     for css_class in css_class_list:
         q_wdg.setProperty('css{}'.format(css_class), 'on')
+
+    __update_wdg(q_wdg)
 
 
 def wdg_remove_classes( q_wdg, css_classes_str ):
@@ -39,6 +48,8 @@ def wdg_remove_classes( q_wdg, css_classes_str ):
         if css_prop_name in active_css_prop_names:
             q_wdg.setProperty(css_prop_name, None)  # setting property with value None removes it
 
+    __update_wdg(q_wdg)
+
 
 def wdg_set_classes( q_wdg, css_classes_str ):
 
@@ -50,5 +61,7 @@ def wdg_set_classes( q_wdg, css_classes_str ):
     css_class_list = css_classes_str.split()
     for css_class in css_class_list:
         q_wdg.setProperty('css{}'.format(css_class), 'on')
+
+    __update_wdg(q_wdg)
 
 
