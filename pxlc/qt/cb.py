@@ -24,8 +24,21 @@
 
 from .. import Callback
 
-def connect_callback(wdg_signal, callback_fn, cb_data):
+_g_pxlc_callbacks = []
+
+def connect_callback(wdg_signal, callback_fn, cb_data, containing_obj=None):
+
+    global _g_pxlc_callbacks
 
     callback = Callback.Callback(callback_fn, cb_data)
-    wdg_signal.connect(lambda:callback.wrapper_fn(callback))
+    wdg_signal.connect(callback.wrapper_fn)
+
+    if containing_obj:
+        if isinstance(containing_obj, object):
+            if not hasattr(containing_obj, '_pxlc_callbacks'):
+                containing_obj._pxlc_callbacks = []
+            containing_obj._pxlc_callbacks.append(callback)
+    else:
+        _g_pxlc_callbacks.append(callback)
+
 

@@ -125,18 +125,11 @@ class EasyDataTableWdg(QtGui.QTableWidget):
         for r_idx, row_data in enumerate(self.data_rows):
             for c_idx, col_name in enumerate(self.column_order):
                 col_cfg_d = self.col_config.get(col_name, {})
-                wdg = None
+
                 col_wdg_type = col_cfg_d.get('widget_type')
-                if not col_wdg_type:
-                    col_wdg_type = 'line_edit'
-                # get_widget_fn = col_cfg_d.get('widget_fn')
-
-                wdg = self._create_wdg_by_type(col_wdg_type, r_idx, col_name, col_cfg_d)
-
                 is_editable = col_cfg_d.get('is_editable', True)
 
-                # if get_widget_fn:
-                #     wdg = get_widget_fn(self, r_idx, col_name, self.col_config.get(col_name, {}), self.context)
+                wdg = self._create_wdg_by_type(col_wdg_type, r_idx, col_name, col_cfg_d)
 
                 if wdg:
                     if not is_editable:
@@ -145,12 +138,11 @@ class EasyDataTableWdg(QtGui.QTableWidget):
                     self.wdg_by_row_col[ (r_idx, c_idx) ] = wdg
                     continue
 
-                # twdg_item = QtGui.QTableWidgetItem('{}'.format(row_data.get(col_name)))
-                # if not is_editable:
-                #     twdg_item.setFlags(twdg_item.flags() ^ QtCore.Qt.ItemIsEditable)
-                # self.setItem(r_idx, c_idx, twdg_item)
-                # print('  (%s, %s) => %s' % (r_idx, c_idx, type(self.item(r_idx, c_idx))))
-                pass
+                # --- otherwise default to using QTableWidgetItem for text editing
+                twdg_item = QtGui.QTableWidgetItem('{}'.format(row_data.get(col_name)))
+                if not is_editable:
+                    twdg_item.setFlags(twdg_item.flags() ^ QtCore.Qt.ItemIsEditable)
+                self.setItem(r_idx, c_idx, twdg_item)
 
         header_labels = []
         for col_name in self.column_order:
@@ -161,5 +153,52 @@ class EasyDataTableWdg(QtGui.QTableWidget):
             header_labels.append(col_header)
 
         self.setHorizontalHeaderLabels(header_labels)
+
+        connect_callback(self.cellChanged, self._edit_cb_cell_changed, {'signal_name': 'cellChanged'}, self)
+
+        # --- For testing, uncomment lines below:
+        # connect_callback(self.cellActivated, self._test_signal, {'signal_name': 'cellActivated'}, self)
+        # connect_callback(self.cellClicked, self._test_signal, {'signal_name': 'cellClicked'}, self)
+        # connect_callback(self.cellDoubleClicked, self._test_signal, {'signal_name': 'cellDoubleClicked'}, self)
+        # connect_callback(self.cellPressed, self._test_signal, {'signal_name': 'cellPressed'}, self)
+        # self.setMouseTracking(True)  # must be on for "cellEntered" signal to fire
+        # connect_callback(self.cellEntered, self._test_signal, {'signal_name': 'cellEntered'}, self)
+        pass
+
+    def _edit_cb_cell_changed(self, cb_data, args):
+
+        row_idx = args[0]
+        col_idx = args[1]
+
+        col_name = self.column_order[col_idx]
+        item = self.item(row_idx, col_idx)
+
+        prev_value = self.get_data_rows()[row_idx][col_name]
+        new_value = str(item.text())
+
+        if prev_value != new_value:
+            self.get_data_rows()[row_idx][col_name] = new_value
+            # print('')
+            # print('[SIGNAL]: "cellChanged" - cell (%s, %s) data changed from "%s" to "%s"' %
+            #         (row_idx, col_idx, prev_value, new_value))
+            # print('')
+            pass
+
+        col_cfg_d = self.col_config.get(col_name, {})
+        pass_along_cb_data = {
+            'row_idx': row_idx, 'col_name': col_name, 'easy_table_wdg': self, 'wdg_type': 'table_item',
+            'edit_response_fn': col_cfg_d.get('edit_response_fn'), 'wdg': item,
+        }
+        edit_response_fn = pass_along_cb_data.get('edit_response_fn')
+        if edit_response_fn:
+            edit_response_fn(pass_along_cb_data, [row_idx, col_idx])
+
+    def _test_signal2(self, x, y):
+
+        print('[SIGNAL]: got (x,y) of (%s, %s)' % (x, y))
+
+    def _test_signal(self, cb_data, args):
+
+        print('[SIGNAL]: "%s", args = %s' % (cb_data.get('signal_name'), list(args)))
 
 
