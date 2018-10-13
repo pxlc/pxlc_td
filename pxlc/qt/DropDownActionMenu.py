@@ -24,7 +24,7 @@
 
 from PySide import QtCore, QtGui
 
-from .cb import connect_callback  # local import
+from .. import Callback  # local package import
 
 __INFO__ = '''
 
@@ -33,46 +33,47 @@ __INFO__ = '''
     [
         {
             'label': 'Menu label',
-            'select_data': 'any type, returned if item is selected',
-            'style': 'style sheet string (optional)',
+            # ... and whatever else you want as data
         }
     ]
 
 '''
 
+class DropDownActionMenu(QtGui.QToolButton):
 
-class DropDownMenu(QtGui.QComboBox):
+    def __init__(self, item_list, item_selected_cb_fn, button_label='', button_icon_path='',
+                 use_arrow_icon=False, parent=None):
 
-    def __init__(self, item_list=[], parent=None):
+        super(DropDownActionMenu, self).__init__(parent=parent)
 
-        super(DropDownMenu, self).__init__(parent=parent)
+        if button_label:
+            self.setText(button_label)
 
-        self.item_list = item_list[:]
+        if use_arrow_icon:
+            self.setPopupMode(QtGui.QToolButton.MenuButtonPopup)
+        else:
+            self.setPopupMode(QtGui.QToolButton.InstantPopup)
+            self.setStyleSheet('::menu-indicator{ width: 0px; }')  # this works!
 
-    def clear_all_items(self):
+        self.item_selected_cb_fn = item_selected_cb_fn
+        self._toolbutton_menu = QtGui.QMenu()
 
-        while self.count() > 0:
-            self.removeItem(0)
+        self._callback_list = []
+        self._load_items(item_list)
 
-    def load_items(self, item_list):
+        self.setMenu(self._toolbutton_menu)
 
-        self.clear_all_items()
+    def _load_items(self, item_list):
+
         self.item_list = item_list[:]
 
         for item in self.item_list:
-            label = item.get('label','')
-            self.addItem(label)
+            cb = Callback.Callback(self.central_cb_fn, item)
+            self._callback_list.append(cb)
+            self._toolbutton_menu.addAction(item.get('label',''), cb.wrapper_fn)
 
-        self.setSizeAdjustPolicy(QtGui.QComboBox.AdjustToContents)
+    def central_cb_fn(self, item, args):
 
-    def set_index_changed_callback(self, index_changed_cb_fn):
+        self.item_selected_cb_fn(item)
 
-        connect_callback(self.currentIndexChanged, index_changed_cb_fn, {'wdg': self})
-
-    def get_current_item(self):
-
-        curr_idx = self.currentIndex()
-        if curr_idx >= 0 and curr_idx < len(self.item_list):
-            return self.item_list[curr_idx]
-        return None
 

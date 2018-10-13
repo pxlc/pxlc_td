@@ -61,7 +61,89 @@ def ensure_only_single_active_checked(cb_data, args):
                 wdg.setChecked(False)
 
 
+class MainExampleWdg(QtGui.QWidget):  
+
+    def __init__(self):
+
+        super(MainExampleWdg, self).__init__()
+
+        columns = ['greeting', 'language', 'activate']
+        data_list = [
+            {'greeting': 'Hello', 'language': 'English', 'activate': False},
+            {'greeting': 'Bonjour', 'language': 'French', 'activate': True},
+            {'greeting': 'Ciao', 'language': 'Italian', 'activate': False},
+            {'greeting': 'Ohaiyo', 'language': 'Japanese', 'activate': True},
+        ]
+
+        col_config = {
+            'greeting': {
+            },
+            'language': {
+                'is_editable': False
+            },
+            'activate': {
+                'widget_type': 'check_box',
+                'edit_response_fn': ensure_only_single_active_checked
+            },
+        }
+
+        #DEBUG
+        print('')
+        print('-------[ QStyleFactory styles ]----------')
+        print('')
+        for k in QtGui.QStyleFactory.keys():
+            print('    %s' % k)
+        print('')
+        print('-----------------------------------------')
+        print('')
+        #DEBUG
+
+        q_style = None
+        style_name = "Plastique"
+        if style_name in [ str(k) for k in QtGui.QStyleFactory.keys() ]:
+            q_style = QtGui.QStyleFactory.create(style_name)
+        else:
+            print('')
+            print(':: Style name "%s" not found in QStyleFactory ... ignoring style.' % style_name)
+            print('')
+
+        if q_style:
+            self.setStyle(q_style)
+
+        self.main_vbox = QtGui.QVBoxLayout()
+        self.setLayout(self.main_vbox)
+
+        self.title_hbox = QtGui.QHBoxLayout()
+        self.main_vbox.addLayout(self.title_hbox)
+
+        self.title_label = QtGui.QLabel()
+        self.title_label.setText("Example of EasyDataTableWdg class   ")
+
+        self.action_menu = pxlc.qt.DropDownActionMenu([
+                {'label': 'Print Selected', 'data_str': 'Hello One!'},
+                {'label': 'two', 'data_str': 'Hello Two!'},
+                {'label': 'three', 'data_str': 'Hello Three!'},
+            ],
+            self.action_menu_callback, button_label='Actions')
+
+        self.title_hbox.addWidget(self.title_label)
+        self.title_hbox.addWidget(self.action_menu)
+        self.title_hbox.addStretch()
+
+        self.table = pxlc.qt.EasyDataTableWdg({}, col_config, columns, data_list)
+
+        self.main_vbox.addWidget(self.table)
+
+    def action_menu_callback(self, item):
+
+        print(':: got action with data_str value of "%s"' % item.get('data_str'))
+
+        if item.get('label') == 'Print Selected':
+            pass
+
+
 def main2():  
+
     app = QtGui.QApplication(sys.argv)
     app.setStyleSheet('''
 QTableView
@@ -88,32 +170,12 @@ QHeaderView::section
 }
     ''')
 
-    columns = ['greeting', 'language', 'activate']
-    data_list = [
-        {'greeting': 'Hello', 'language': 'English', 'activate': False},
-        {'greeting': 'Bonjour', 'language': 'French', 'activate': True},
-        {'greeting': 'Ciao', 'language': 'Italian', 'activate': False},
-        {'greeting': 'Ohaiyo', 'language': 'Japanese', 'activate': True},
-    ]
+    example_win = MainExampleWdg()
 
-    col_config = {
-        'greeting': {
-        },
-        'language': {
-            'is_editable': False
-        },
-        'activate': {
-            'widget_type': 'check_box',
-            'edit_response_fn': ensure_only_single_active_checked
-        },
-    }
+    example_win.setWindowTitle("QTableWidget Example")
+    example_win.resize(400, 250)
+    example_win.show()
 
-    table = pxlc.qt.EasyDataTableWdg({}, col_config, columns, data_list)
-
-    table.setWindowTitle("QTableWidget Example")
-    table.resize(400, 250)
-
-    table.show()
     return app.exec_()
 
 

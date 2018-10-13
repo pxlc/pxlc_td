@@ -109,7 +109,7 @@ class EasyDataTableWdg(QtGui.QTableWidget):
                 'row_idx': row_idx, 'col_name': col_name, 'easy_table_wdg': self, 'wdg_type': wdg_type,
                 'edit_response_fn': col_cfg_d.get('edit_response_fn'), 'wdg': wdg,
             }
-            # connect_callback(wdg.textChanged, self._edit_cb_line_edit, cb_data)
+            # connect_callback(wdg.textChanged, self._edit_cb_line_edit, cb_data) # this fires every character
             connect_callback(wdg.editingFinished, self._edit_cb_line_edit, cb_data)
             return wdg
 

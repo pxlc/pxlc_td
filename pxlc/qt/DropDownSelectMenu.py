@@ -22,12 +22,57 @@
 # SOFTWARE.
 # -------------------------------------------------------------------------------
 
-from HoverPressIconButton import HoverPressIconButton
-from EasyDataTableWdg import EasyDataTableWdg
-from DropDownSelectMenu import DropDownSelectMenu
-from DropDownActionMenu import DropDownActionMenu
+from PySide import QtCore, QtGui
 
-import css
+from .cb import connect_callback  # local import
 
-from cb import connect_callback
+__INFO__ = '''
+
+   item list:
+
+    [
+        {
+            'label': 'Menu label',
+            'select_data': 'any type, returned if item is selected',
+            'style': 'style sheet string (optional)',
+        }
+    ]
+
+'''
+
+
+class DropDownSelectMenu(QtGui.QComboBox):
+
+    def __init__(self, item_list=[], parent=None):
+
+        super(DropDownSelectMenu, self).__init__(parent=parent)
+
+        self.item_list = item_list[:]
+
+    def clear_all_items(self):
+
+        while self.count() > 0:
+            self.removeItem(0)
+
+    def load_items(self, item_list):
+
+        self.clear_all_items()
+        self.item_list = item_list[:]
+
+        for item in self.item_list:
+            label = item.get('label','')
+            self.addItem(label)
+
+        self.setSizeAdjustPolicy(QtGui.QComboBox.AdjustToContents)
+
+    def set_index_changed_callback(self, index_changed_cb_fn):
+
+        connect_callback(self.currentIndexChanged, index_changed_cb_fn, {'wdg': self}, containing_obj=self)
+
+    def get_current_item(self):
+
+        curr_idx = self.currentIndex()
+        if curr_idx >= 0 and curr_idx < len(self.item_list):
+            return self.item_list[curr_idx]
+        return None
 
