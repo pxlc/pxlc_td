@@ -161,8 +161,18 @@ class EasyDataTableWdg(QtGui.QTableWidget):
         # connect_callback(self.cellClicked, self._test_signal, {'signal_name': 'cellClicked'}, self)
         # connect_callback(self.cellDoubleClicked, self._test_signal, {'signal_name': 'cellDoubleClicked'}, self)
         # connect_callback(self.cellPressed, self._test_signal, {'signal_name': 'cellPressed'}, self)
-        # self.setMouseTracking(True)  # must be on for "cellEntered" signal to fire
-        # connect_callback(self.cellEntered, self._test_signal, {'signal_name': 'cellEntered'}, self)
+        self.setMouseTracking(True)  # must be on for "cellEntered" signal to fire
+        connect_callback(self.cellEntered, self._test_signal, {'signal_name': 'cellEntered'}, self)
+
+        h_hdr = self.horizontalHeader()
+        h_hdr.setResizeMode(QtGui.QHeaderView.Stretch)
+        for idx in range(len(self.column_order)):
+            connect_callback(h_hdr.sectionEntered, self._test_signal,
+                             {'signal_name': 'sectionEntered', 'idx': idx}, self)
+
+        v_hdr = self.verticalHeader()
+        v_hdr.setResizeMode(QtGui.QHeaderView.Stretch)
+
         pass
 
     def _edit_cb_cell_changed(self, cb_data, args):
@@ -199,6 +209,13 @@ class EasyDataTableWdg(QtGui.QTableWidget):
 
     def _test_signal(self, cb_data, args):
 
-        print('[SIGNAL]: "%s", args = %s' % (cb_data.get('signal_name'), list(args)))
+        if 'idx' in cb_data:
+            print('[SIGNAL]: "%s" (idx=%s), args = %s' % (cb_data.get('signal_name'),
+                                                            cb_data.get('idx'), list(args)))
+        else:
+            print('[SIGNAL]: "%s", args = %s' % (cb_data.get('signal_name'), list(args)))
 
+    def leaveEvent(self, event):
+
+        print('>> The Mouse has left the bulding!')
 

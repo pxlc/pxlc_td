@@ -130,9 +130,16 @@ class MainExampleWdg(QtGui.QWidget):
         self.title_hbox.addWidget(self.action_menu)
         self.title_hbox.addStretch()
 
-        self.table = pxlc.qt.EasyDataTableWdg({}, col_config, columns, data_list)
+        self.table_hbox = QtGui.QHBoxLayout()
 
-        self.main_vbox.addWidget(self.table)
+        self.table = pxlc.qt.EasyDataTableWdg({}, col_config, columns, data_list)
+        self.table.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum))
+
+        self.table_hbox.addWidget(self.table)
+        self.table_hbox.addStretch()
+
+        self.main_vbox.addLayout(self.table_hbox)
+        self.main_vbox.addStretch()
 
     def action_menu_callback(self, item):
 
@@ -145,6 +152,8 @@ class MainExampleWdg(QtGui.QWidget):
 def main2():  
 
     app = QtGui.QApplication(sys.argv)
+
+    __IGNORE__ = """
     app.setStyleSheet('''
 QTableView
 {
@@ -169,6 +178,7 @@ QHeaderView::section
     font-size:12px;
 }
     ''')
+    """
 
     example_win = MainExampleWdg()
 
