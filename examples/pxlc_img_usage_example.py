@@ -13,7 +13,7 @@ from PIL import Image
 if __name__ == '__main__':
 
     in_img = Image.open('%s/examples/data/rendered_frame.png' % PXLC_TD_ROOT)
-    w_bkg_img = pxlc.img.add_color_bkg_to_image( in_img, (127, 127, 127, 255) )
+    w_bkg_img = pxlc.img.add_color_bkg_to_image( in_img, (128, 128, 128, 255) )
 
     tovr = pxlc.img.TextOverlay('rgba(255, 255, 255, 255)', 'rgba(0, 0, 0, 255)', 1)
 
