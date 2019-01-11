@@ -22,12 +22,26 @@
 # SOFTWARE.
 # -------------------------------------------------------------------------------
 
-import qt
+try:
+    import qt
+except:
+    print('')
+    print('>> Warning: Unable to import qt utils sub-package. Likely no PySide or PyQt or qt shim modules found.')
+    print('            ... continuing but .qt functionality will not be available')
+    print('')
 
 from EnvManager import EnvManager
 from MainOptParse import MainOptParse
 from Callback import Callback
 
 import util
+
+try:
+    import img
+except:
+    print('')
+    print('>> Warning: Unable to import img utils sub-package. Likely no PIL module found.')
+    print('            ... continuing but .img functionality will not be available')
+    print('')
 
 
